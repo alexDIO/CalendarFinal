@@ -1,5 +1,6 @@
 package calendar;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
@@ -41,7 +42,7 @@ public class EventJAXB implements Serializable {
     public List<String> getAttendees() {
         return attendees;
     }
-    @XmlElement
+    @XmlAttribute
     public void setDescription(String description) {
         this.description = description;
     }

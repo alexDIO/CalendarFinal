@@ -12,11 +12,13 @@ public class CalendarServiceImpl implements CalendarService {
     private Map<String, LinkedList<Event>> eventsSchedule = new HashMap<String, LinkedList<Event>>();
 
     //getter for map with all events
+    @Override
     public Map<String, Event> getCalendar() {
         return calendar;
     }
 
     //getter for map with all emails
+    @Override
     public Map<String, LinkedList<Event>> getEventsSchedule() {
         return eventsSchedule;
     }
@@ -24,7 +26,7 @@ public class CalendarServiceImpl implements CalendarService {
 
     //adding event to collection with all events and to collection with events to each participant
     @Override
-    public void addEvent(Event event) /*throws CalendarException*/{
+    public void addEvent(Event event) throws CalendarException{
 
         List<String> eventsAttendees = event.getAttendees();
         for (String email : eventsAttendees){
@@ -39,14 +41,13 @@ public class CalendarServiceImpl implements CalendarService {
                     if ((event.getDateFrom().after(eventOfAttendee.getDateFrom()) && event.getDateFrom().before(eventOfAttendee.getDateTo())) ||
                             (event.getDateTo().after(eventOfAttendee.getDateFrom()) && event.getDateTo().before(eventOfAttendee.getDateTo())) ||
                             (event.getDateFrom().before(eventOfAttendee.getDateFrom()) && event.getDateTo().after(eventOfAttendee.getDateTo())))
-                    {} //throw new CalendarException("Attendee " + email + " is busy and can't take part in event " + event.getDescription());
+                        throw new CalendarException("Attendee " + email + " is busy and can't take part in event " + event.getDescription());
                 }
 
                 eventsSchedule.get(email).add(event);
                 calendar.put(event.getDescription(), event);
             }
         }
-
     }
 
     //checking if the person free in particular time
@@ -136,17 +137,20 @@ public class CalendarServiceImpl implements CalendarService {
     }
     //printing the details of event
     @Override
-    public void printEvent(Event event){
+    public String printEvent(Event event){
+        String eventInfo = "test";
         if (event.getDescription() != null)
-            System.out.println("Event's description - " + event.getDescription());
+            eventInfo = eventInfo + "Event's description - " + event.getDescription() + ". ";
         if (event.getDateFrom() != null && event.getDateTo() != null)
-            System.out.println("Event's duration - from " + event.getDateFrom().getTime() + " to " + event.getDateTo().getTime());
+            eventInfo = eventInfo + "Event's duration - from " + event.getDateFrom().getTime() + " to " + event.getDateTo().getTime()+ ". ";
         if (event.getAttendees() != null){
-            System.out.println("Event's attendees: ");
+            eventInfo = eventInfo + "Event's attendees: ";
             for (String email : event.getAttendees()){
-                System.out.println(email);
+                eventInfo = eventInfo + email + " ";
             }
         }
+        System.out.println(eventInfo);
+        return eventInfo;
     }
     //printing events from map with all events
     @Override
@@ -175,22 +179,25 @@ public class CalendarServiceImpl implements CalendarService {
     }
 
 
+    @Override
     public void writeEvent(Event event){
         EventJAXB eventJAXB = new EventJAXB(event);
 
         try {
-            File file = new File ("D:\\file.xml");
+
             JAXBContext jaxbContext = JAXBContext.newInstance(EventJAXB.class);
-            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            Marshaller marshaller = jaxbContext.createMarshaller();
 
             //output printed
-            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-            jaxbMarshaller.marshal(eventJAXB, file);
-            jaxbMarshaller.marshal(eventJAXB, System.out);
+            //String workingDir = System.getProperty("user.dir");
+            File file = new File("D:\\Spec\\Programming\\DIOcourse\\CalendarFinal\\events\\"+event.getDescription()+".xml");
+
+            marshaller.marshal(eventJAXB, file);
+            marshaller.marshal(eventJAXB, System.out);
         } catch (JAXBException e){
             e.printStackTrace();
         }
     }
-
 }
