@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class ClientMain {
 
-    //public static final Logger logger = Logger.getAnonymousLogger();
 
     public static void main(String[] args) throws RemoteException {
 

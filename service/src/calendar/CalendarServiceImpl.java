@@ -50,6 +50,18 @@ public class CalendarServiceImpl implements CalendarService {
         }
     }
 
+    @Override
+    public void removeEvent(String description){
+        if (calendar.containsKey(description)){
+            calendar.remove(description);
+
+            String dir = System.getProperty("user.dir");
+
+            File deletedFile = new File(dir+"\\events\\"+description+".xml");
+            deletedFile.delete();
+        }
+    }
+
     //checking if the person free in particular time
     @Override
     public boolean isFreeAtTime(String email, Calendar date){
@@ -191,10 +203,10 @@ public class CalendarServiceImpl implements CalendarService {
             //output printed
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-            //String workingDir = System.getProperty("user.dir");
-            File file = new File("D:\\Spec\\Programming\\DIOcourse\\CalendarFinal\\events\\"+event.getDescription()+".xml");
+            String dir = System.getProperty("user.dir");
+            //File file = new File(dir + "\\events\\"+event.getDescription()+".xml");
 
-            marshaller.marshal(eventJAXB, file);
+            marshaller.marshal(eventJAXB, new File(dir + "\\events\\"+event.getDescription()+".xml"));
             marshaller.marshal(eventJAXB, System.out);
         } catch (JAXBException e){
             e.printStackTrace();

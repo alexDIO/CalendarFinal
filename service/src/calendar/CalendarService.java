@@ -22,6 +22,9 @@ public interface CalendarService {
     //adding event to collection with all events and to collection with events to each participant
     void addEvent(Event event) throws CalendarException;
 
+    void removeEvent(String description);
+
+
     //checking if the person free in particular time
     boolean isFreeAtTime(String email, Calendar date);
 

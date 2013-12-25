@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.List;
 
-@XmlRootElement
+@XmlRootElement(name = "event")
 public class EventJAXB implements Serializable {
     String description;
     Calendar dateFrom;
