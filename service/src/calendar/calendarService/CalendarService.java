@@ -1,17 +1,13 @@
-package calendar;
+package calendar.calendarService;
+
+import calendar.event.Event;
 
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Alex
- * Date: 25.12.13
- * Time: 22:47
- * To change this template use File | Settings | File Templates.
- */
+
 public interface CalendarService {
     //getter for map with all events
     Map<String, Event> getCalendar();
@@ -39,7 +35,7 @@ public interface CalendarService {
     Calendar convenientEndTime(List<String> attendees, Calendar startDate, int durationInHours);
 
     //creation of event
-    Event createEvent(String description, Calendar dateFrom, Calendar dateTo, List<String> emails);
+    Event createEvent(String description, Calendar dateFrom, Calendar dateTo, List<String> emails) throws CalendarException;
 
     //creation of Event with all-day duration
     Event createEvent(String description, Calendar date, List<String> emails);

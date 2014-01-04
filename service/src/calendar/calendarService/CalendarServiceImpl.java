@@ -1,15 +1,49 @@
-package calendar;
+package calendar.calendarService;
+
+import calendar.event.Event;
+import calendar.event.EventJAXB;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 
 public class CalendarServiceImpl implements CalendarService {
     private Map<String, Event> calendar = new HashMap<String, Event>();
     private Map<String, LinkedList<Event>> eventsSchedule = new HashMap<String, LinkedList<Event>>();
+
+    public CalendarServiceImpl(){
+        //add directory scanning and apply for each xml files
+        try{
+            File myFolder = new File(System.getProperty("user.dir") +"\\events");
+            File[] files = myFolder.listFiles();
+
+            for(File currentFile : files){
+                JAXBContext jaxbContext = JAXBContext.newInstance(EventJAXB.class);
+
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                EventJAXB eventJAXB = (EventJAXB) unmarshaller.unmarshal(currentFile);
+
+                Event newEvent = new Event.Builder()
+                        .description(eventJAXB.getDescription())
+                        .dateFrom(eventJAXB.getDateFrom())
+                        .dateTo(eventJAXB.getDateTo())
+                        .attendees(eventJAXB.getAttendees())
+                        .build();
+                calendar.put(newEvent.getDescription(),newEvent);
+            }
+        }
+        catch (JAXBException e){
+            e.printStackTrace();
+        }
+    }
 
     //getter for map with all events
     @Override
@@ -46,6 +80,7 @@ public class CalendarServiceImpl implements CalendarService {
 
                 eventsSchedule.get(email).add(event);
                 calendar.put(event.getDescription(), event);
+                writeEvent(event);
             }
         }
     }
@@ -55,10 +90,12 @@ public class CalendarServiceImpl implements CalendarService {
         if (calendar.containsKey(description)){
             calendar.remove(description);
 
-            String dir = System.getProperty("user.dir");
-
-            File deletedFile = new File(dir+"\\events\\"+description+".xml");
-            deletedFile.delete();
+            Path path = Paths.get(System.getProperty("user.dir"),"events",description +".xml");
+            try{
+                Files.delete(path);
+            } catch (IOException e){
+                System.err.format("%s: no such" + "file or directory%n",path);
+            }
         }
     }
 
@@ -120,16 +157,16 @@ public class CalendarServiceImpl implements CalendarService {
 
     //creation of event
     @Override
-    public Event createEvent(String description, Calendar dateFrom, Calendar dateTo, List<String> emails){
-        Event event =  new Event.Builder()
-                .description(description)
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
-                .attenders(emails)
-                .build();
-
-        writeEvent(event);
-        return event;
+    public Event createEvent(String description, Calendar dateFrom, Calendar dateTo, List<String> emails) throws CalendarException{
+        if (dateTo.before(dateFrom))
+            throw new CalendarException("Mistake in dates of event " + description + ". DateTo can't be less than DateFrom");
+        else
+            return new Event.Builder()
+                    .description(description)
+                    .dateFrom(dateFrom)
+                    .dateTo(dateTo)
+                    .attendees(emails)
+                    .build();
     }
     //creation of Event with all-day duration
     @Override
@@ -137,15 +174,13 @@ public class CalendarServiceImpl implements CalendarService {
         Calendar dateFrom = new GregorianCalendar(date.get(Calendar.YEAR),date.get(Calendar.MONTH),date.get(Calendar.DATE),00,00,00);
         Calendar dateTo = new GregorianCalendar(date.get(Calendar.YEAR),date.get(Calendar.MONTH),date.get(Calendar.DATE),23,59,59);
 
-        Event event =  new Event.Builder()
+        return new Event.Builder()
                 .description(description)
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
-                .attenders(emails)
+                .attendees(emails)
                 .build();
 
-        writeEvent(event);
-        return event;
     }
     //printing the details of event
     @Override
@@ -170,9 +205,7 @@ public class CalendarServiceImpl implements CalendarService {
         if (calendar.size()==0)
             System.out.println("There is no events in calendar.");
         else {
-            Iterator<Map.Entry<String,Event>> iterator = calendar.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String,Event> pair = iterator.next();
+            for (Map.Entry<String, Event> pair : calendar.entrySet()) {
                 printEvent(pair.getValue());
             }
         }
@@ -181,9 +214,7 @@ public class CalendarServiceImpl implements CalendarService {
     @Override
     public List<Event> getEventsByDate(Calendar date){
         List<Event> list = new LinkedList<Event>();
-        Iterator<Map.Entry<String,Event>> iterator = calendar.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<String,Event> pair = iterator.next();
+        for (Map.Entry<String, Event> pair : calendar.entrySet()) {
             if (date.after(pair.getValue().getDateFrom()) && date.before(pair.getValue().getDateTo()))
                 list.add(pair.getValue());
         }
@@ -204,8 +235,6 @@ public class CalendarServiceImpl implements CalendarService {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
             String dir = System.getProperty("user.dir");
-            //File file = new File(dir + "\\events\\"+event.getDescription()+".xml");
-
             marshaller.marshal(eventJAXB, new File(dir + "\\events\\"+event.getDescription()+".xml"));
             marshaller.marshal(eventJAXB, System.out);
         } catch (JAXBException e){

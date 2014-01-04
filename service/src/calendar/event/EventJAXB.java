@@ -1,4 +1,4 @@
-package calendar;
+package calendar.event;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;

@@ -1,13 +1,12 @@
-import calendar.CalendarException;
-import calendar.CalendarService;
-import calendar.Event;
+import calendar.calendarService.CalendarException;
+import calendar.calendarService.CalendarService;
+import calendar.event.Event;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.Map;
 
 public class ClientMain {
@@ -18,8 +17,7 @@ public class ClientMain {
         ApplicationContext context = new ClassPathXmlApplicationContext("clientApplicationContext.xml");
         CalendarService service = (CalendarService) context.getBean("calendarService");
 
-        String[] reservedCalendarNames = {"Alex","John"};
-        Event event1 =  service.createEvent("testEvent1",new GregorianCalendar(2013,12,19), Arrays.asList(reservedCalendarNames));
+        Event event1 =  service.createEvent("testEvent1",new GregorianCalendar(2013,12,19), Arrays.asList("Alex","John"));
 
         try{
             service.addEvent(event1);
@@ -29,10 +27,11 @@ public class ClientMain {
 
         Map<String,Event> calendar = service.getCalendar();
 
-        Iterator<Map.Entry<String,Event>> iterator = calendar.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<String,Event> pair = iterator.next();
+        for (Map.Entry<String, Event> pair : calendar.entrySet()) {
             System.out.println(pair.getValue().getDescription());
         }
+
+        //service.removeEvent("testEvent1");
+
     }
 }

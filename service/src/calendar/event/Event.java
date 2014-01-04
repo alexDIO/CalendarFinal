@@ -1,4 +1,4 @@
-package calendar;
+package calendar.event;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -88,8 +88,8 @@ public class Event implements Serializable {
             return this;
         }
 
-        public Builder attenders(List<String> attenders){
-            this.attendees = attenders;
+        public Builder attendees(List<String> attendees){
+            this.attendees = attendees;
             return this;
         }
 

@@ -1,4 +1,4 @@
-package calendar;
+package calendar.calendarService;
 
 public class CalendarException extends Exception{
     public CalendarException() {
